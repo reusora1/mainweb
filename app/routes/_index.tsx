@@ -1,67 +1,91 @@
-import type { MetaFunction } from "@remix-run/cloudflare";
+import { useEffect, useRef, useState } from "react";
+import videojs from "video.js";
+import "video.js/dist/video-js.css";
+import dashjs from "dashjs";
+import Hls from "hls.js";
 
-export const meta: MetaFunction = () => {
-  return [
-    { title: "New Remix App" },
-    { name: "description", content: "Welcome to Remix!" },
-  ];
+type Channel = {
+  id: number;
+  title: string;
+  logo: string;
+  stream_link: string;
 };
 
-// Sample data for the navigation links
-const resources = [
-  {
-    href: "https://remix.run/docs",
-    text: "Documentation",
-    icon: "📘", // Replace with your actual icons or components
-  },
-  {
-    href: "https://github.com/remix-run/remix",
-    text: "GitHub Repo",
-    icon: "💻",
-  },
+export const meta = () => [
+  { title: "PH IPTV Player" },
+  { name: "description", content: "Free PH IPTV streaming with Remix." },
 ];
 
 export default function Index() {
+  const playerRef = useRef<HTMLVideoElement>(null);
+  const [streamUrl, setStreamUrl] = useState<string | null>(null);
+
+  const channels: Channel[] = [
+    {
+      id: 87,
+      title: "NBA TV Philippines",
+      logo:
+        "https://upload.wikimedia.org/wikipedia/en/thumb/d/de/NBA_TV_Philippines.png/1200px-NBA_TV_Philippines.png",
+      stream_link:
+        "https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/pl_nba.mpd",
+    },
+    {
+      id: 2,
+      title: "TV5 HD",
+      logo:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/TV5_%28Philippines%29_logo.svg/2048px-TV5_%28Philippines%29_logo.svg.png",
+      stream_link:
+        "https://qp-pldt-live-grp-02-prod.akamaized.net/out/u/tv5_hd.mpd",
+    },
+    // Add more channels as needed...
+  ];
+
+  useEffect(() => {
+    const video = playerRef.current;
+    if (!video || !streamUrl) return;
+
+    // Cleanup any existing instances
+    video.src = "";
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(streamUrl);
+      hls.attachMedia(video);
+    } else if (streamUrl.endsWith(".mpd")) {
+      const player = dashjs.MediaPlayer().create();
+      player.initialize(video, streamUrl, true);
+    } else {
+      video.src = streamUrl;
+    }
+
+    video.play().catch(() => {});
+  }, [streamUrl]);
+
   return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="flex flex-col items-center gap-16">
-        <header className="flex flex-col items-center gap-9">
-          <h1 className="leading text-2xl font-bold text-gray-800 dark:text-gray-100">
-            Welcome to <span className="sr-only">Remix</span>
-          </h1>
-          <div className="h-[144px] w-[434px]">
-            <img
-              src="/logo-light.png"
-              alt="Remix"
-              className="block w-full dark:hidden"
-            />
-            <img
-              src="/logo-dark.png"
-              alt="Remix"
-              className="hidden w-full dark:block"
-            />
-          </div>
-        </header>
-        <nav className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-gray-200 p-6 dark:border-gray-700">
-          <p className="leading-6 text-gray-700 dark:text-gray-200">
-            What&apos;s next?
-          </p>
-          <ul>
-            {resources.map(({ href, text, icon }) => (
-              <li key={href}>
-                <a
-                  className="group flex items-center gap-3 self-stretch p-3 leading-normal text-blue-700 hover:underline dark:text-blue-500"
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <span>{icon}</span>
-                  <span>{text}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+    <div className="min-h-screen bg-black text-white p-4">
+      <h1 className="text-2xl font-bold text-center mb-6">FREE PH IPTV</h1>
+
+      {/* Video Player */}
+      <div className="flex justify-center mb-8">
+        <video
+          ref={playerRef}
+          className="video-js w-full max-w-4xl aspect-video rounded"
+          controls
+          autoPlay
+        />
+      </div>
+
+      {/* Channel List */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        {channels.map((ch) => (
+          <button
+            key={ch.id}
+            onClick={() => setStreamUrl(ch.stream_link)}
+            className="bg-gray-800 hover:bg-gray-700 rounded p-2 flex flex-col items-center"
+          >
+            <img src={ch.logo} alt={ch.title} className="h-12 object-contain" />
+            <span className="mt-2 text-sm text-center">{ch.title}</span>
+          </button>
+        ))}
       </div>
     </div>
   );
