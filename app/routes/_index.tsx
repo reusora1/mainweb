@@ -7,6 +7,20 @@ export const meta: MetaFunction = () => {
   ];
 };
 
+// Sample data for the navigation links
+const resources = [
+  {
+    href: "https://remix.run/docs",
+    text: "Documentation",
+    icon: "📘", // Replace with your actual icons or components
+  },
+  {
+    href: "https://github.com/remix-run/remix",
+    text: "GitHub Repo",
+    icon: "💻",
+  },
+];
+
 export default function Index() {
   return (
     <div className="flex h-screen items-center justify-center">
@@ -41,8 +55,8 @@ export default function Index() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  {icon}
-                  {text}
+                  <span>{icon}</span>
+                  <span>{text}</span>
                 </a>
               </li>
             ))}
@@ -52,6 +66,3 @@ export default function Index() {
     </div>
   );
 }
-
-
-];
