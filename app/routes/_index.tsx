@@ -3,7 +3,7 @@ import videojs from "video.js";
 import "video.js/dist/video-js.css";
 import dashjs from "dashjs";
 import Hls from "hls.js";
-
+import { channels } from "~/data/channels";
 type Channel = {
   id: number;
   title: string;
